@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1667312829 source:d:\bryan\desktop\project\regression\main.cpp
+	<iostream>
+	<math.h>
+	<cmath>
+	<stdio.h>
+	<fstream>
+	<sstream>
+	<string>
+	<bits/stdc++.h>
+	<algorithm>
+	<numeric>
+	<vector>
+
