@@ -46,88 +46,10 @@ int convertdate(int day, int month, int year)
      return finalint;
 };
 
-/*
-void polyRegression(vector<double>& x, vector<double>& y, int finalint) {
-    int n = x.size();
-    vector<int> r(n);
-    iota(r.begin(), r.end(), 0);
-    double xm = accumulate(x.begin(), x.end(), 0.0) / x.size();
-    double ym = accumulate(y.begin(), y.end(), 0.0) / y.size();
-    double x2m = transform_reduce(r.begin(), r.end(), 0.0, plus<double>{}, [](double a) {return a * a; }) / r.size();
-    double x3m = transform_reduce(r.begin(), r.end(), 0.0, plus<double>{}, [](double a) {return a * a * a; }) / r.size();
-    double x4m = transform_reduce(r.begin(), r.end(), 0.0, plus<double>{}, [](double a) {return a * a * a * a; }) / r.size();
-
-    double xym = transform_reduce(x.begin(), x.end(), y.begin(), 0.0, plus<double>{}, multiplies<double>{});
-    xym /= fmin(x.size(), y.size());
-
-    double x2ym = transform_reduce(x.begin(), x.end(), y.begin(), 0.0, plus<double>{}, [](double a, double b) { return a * a * b; });
-    x2ym /= fmin(x.size(), y.size());
-
-    double sxx = x2m - xm * xm;
-    double sxy = xym - xm * ym;
-    double sxx2 = x3m - xm * x2m;
-    double sx2x2 = x4m - x2m * x2m;
-    double sx2y = x2ym - x2m * ym;
-
-    double b = (sxy * sx2x2 - sx2y * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
-    double c = (sx2y * sxx - sxy * sxx2) / (sxx * sx2x2 - sxx2 * sxx2);
-    double a = ym - b * xm - c * x2m;
-
-    auto abc = [a, b, c](int xx) {
-        return a + b * xx + c * xx*xx;
-    };
-
-    cout << "y = " << a << " + " << b << "x + " << c << "x^2" << endl;
-    double datenum = finalint;
-    double prediction = a + b*datenum + c*pow(datenum, 2);
-    cout<< "Predicted Price of One USD to PHP is: P"<<prediction<<endl;
-}
-*/
-
-
-int main()
-{
-    string Date, Price;
-    float dateval[334];
-    float priceval[334];
+float linearregression (float dateval[], float priceval[], int finalint){
     float x, y, a, b, d;
     float sumx=0,sumxsq=0,sumy=0,sumxy=0;
-    int i,day,month,year,finalint;
-
-
-    ifstream inputFile;
-    inputFile.open("USD_PHP_Historical_Data.csv");
-
-    string line;
-
-    // parse and transfer the content of the csv file into the arrays dateval and priceval
-    //NOTE: DATES ARE ALREADY CONVERTED TO THEIR NUMERICAL FORMS IN THE CSV -> REFER TO convertdate() for explanation
-
-    for (i = 0; i < 334; i++) {
-        getline(inputFile, Date, ',');
-        getline(inputFile, Price);
-
-        dateval[i] = stof(Date);
-        priceval[i] = stof(Price);
-    }
-
-   // vector<float> datevec(dateval, dateval + sizeof dateval/ sizeof dateval[0]);
-   // vector<float> pricevec(priceval, priceval + sizeof priceval/ sizeof priceval[0]);
-
-    cout<<"Enter Day:"<<endl;
-    // if month contains 31days, days must be limited to 1-31
-    // if month contains 30 days, days must be limited to 1-30
-    // if month is 2 (february) , limit the days to 1-28
-    cin>>day; // lalagyan pa ng input checkers para maiwasan errors! for now just to test if working
-    cout<<"Enter Month:"<<endl;
-    // limit to 1-12 only
-    cin>>month;
-    cout<<"Enter Year"<<endl;
-    // 1901 is the minimum
-    cin>> year;
-    finalint = convertdate(day,month,year);
-
-    //linear regression prediction model //polyRegression(datevec, pricevec, finalint);
+    int i;
     //using linear regression does not guarantee accuracy. r^2 = 0.21
     for (i=0; i< 334; i++){
         x = dateval[i];
@@ -144,11 +66,133 @@ int main()
     a=(334*sumxy-sumx*sumy)/d; //ax
     b=(sumy*sumxsq-sumx*sumxy)/d; //b
 
-    cout<<"Value of a: "<<a<<" "<<"Value of b: "<<b<<endl;
-    cout<<"Best Fit Line: "<<a<<"x"<<b<<endl;
+    float predval = a*(finalint)+b; //get the value
 
-    cout<<"============================="<<endl;
-    float predval = a*(finalint)+b;
-    cout<<"Predicted Value of One USD to PHP @ "<<month<<"/"<<day<<"/"<<year<<" is "<<predval<<endl;
+    return predval;
+}
 
+int main()
+{
+    string Date, Price, line;
+    float dateval[334];
+    float priceval[334];
+    float userinput, convvalue, predval;
+    int i,day,month,year,finalint,key1,key2, key3;
+
+    ifstream inputFile;
+    inputFile.open("USD_PHP_Historical_Data.csv");
+
+
+    // parse and transfer the content of the csv file into the arrays dateval and priceval
+    //NOTE: DATES ARE ALREADY CONVERTED TO THEIR NUMERICAL FORMS IN THE CSV -> REFER TO convertdate() for explanation
+
+    for (i = 0; i < 334; i++) {
+        getline(inputFile, Date, ',');
+        getline(inputFile, Price);
+
+        dateval[i] = stof(Date);
+        priceval[i] = stof(Price);
+    }
+    cout<<"USD-PHP Currency Value Converter and Forecaster"<<endl;
+
+    a:
+    cout<<"Choose an Action to Do: "<<endl;
+    cout<<"     [1] Convert at Latest Rate"<<endl;
+    cout<<"     [2] Predict and Convert"<<endl;
+    cout<<"     [3] View Data"<<endl;
+    cout<<"     [4] Exit"<<endl;
+
+    //error handling needed
+    cin>>key1;
+    system ("CLS");
+
+    switch (key1){
+
+        case 1:
+            cout<<"USD to PHP or PHP to USD?"<<endl;
+            cout<<"     [1]USD to PHP"<<endl;
+            cout<<"     [2]PHP to USD"<<endl;
+
+            //error handling needed
+            cin>>key2;
+
+            switch(key2){
+                case 1:
+                    cout<<"Enter of Amount of USD"<<endl;
+                    cin>>userinput;
+
+                    convvalue = priceval[333]*userinput;
+                    cout<<"\n\n";
+                    cout<<"USD-PHP Latest Rate @ October 1, 2022: P"<<priceval[333]<<endl;;
+                    cout<<"Converted Value: $"<<userinput<<" -> P"<<convvalue<<endl;
+                    //continue?
+                    break;
+                case 2:
+                    cout<<"Enter of Amount of PHP"<<endl;
+                    cin>>userinput;
+
+                    convvalue = userinput/priceval[333];
+                    cout<<"\n\n";
+                    cout<<"\n USD-PHP Latest Rate @ October 1, 2022: P"<<priceval[333]<<endl;
+                    cout<<"Converted Value: P"<<userinput<<" -> $"<<convvalue<<endl;
+                    //continue?
+                    break;
+                default:
+                    cout<<"Invalid Input. Returning to Main Menu"<<endl;
+                    system ("CLS");
+                    goto a;
+                    break;
+            }
+        break;
+
+        case 2:
+            cout<<"Predict and Convert at Given Date."<<endl;
+            cout<<"Enter Month:"<<endl;
+            // limit to 1-12 only
+            cin>>month;
+
+            cout<<"Enter Day:"<<endl;
+            // if month contains 31days, days must be limited to 1-31
+            // if month contains 30 days, days must be limited to 1-30
+            // if month is 2 (february) , limit the days to 1-28
+            cin>>day; // lalagyan pa ng input checkers para maiwasan errors! for now just to test if working
+
+            cout<<"Enter Year:"<<endl;
+            // 1901 is the minimum
+            cin>> year;
+
+            cout<<"Enter of Amount of USD:"<<endl;
+            cin>>userinput;
+
+            finalint = convertdate(day,month,year);
+            predval = linearregression(dateval, priceval, finalint);
+
+            cout<<"\n\nPredicted Value of $"<<userinput<<" to PHP @ "<<month<<"/"<<day<<"/"<<year<<" is P"<<predval*userinput<<endl;
+        break;
+
+        case 3:
+            cout<<"View Data"<<endl;
+            cout<<"Date (Numeric Form)  |  Price (USD-PHP)"<<endl;
+            for (i = 0; i < 334; i++){
+                cout.width(5);
+                cout<<dateval[i]<<" | "<<priceval[i]<<endl;
+            }
+            cout<<"Enter 1 to Return to Main Menu."<<endl;
+            cin>>key3;
+            if (key3 == 1){
+                system ("CLS");
+                goto a;
+            }
+        break;
+
+        case 4:
+            exit(0);
+        break;
+
+        default:
+            cout<<"Invalid Input. Returning to Main Menu"<<endl;
+            system ("CLS");
+            goto a;
+        break;
+    }
 }
